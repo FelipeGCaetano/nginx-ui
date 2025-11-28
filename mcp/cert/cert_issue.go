@@ -18,6 +18,7 @@ var certificateIssueTool = mcp.NewTool(
 	mcp.WithArray("domains", mcp.Description("List of domains for the certificate (e.g. ['example.com'])")),
 	mcp.WithString("challenge_method", mcp.Description("Challenge method: 'http01' (default) or 'dns01'")),
 	mcp.WithNumber("dns_credential_id", mcp.Description("ID of DNS credential (required if using dns01)")),
+	mcp.WithString("certificate_dir", mcp.Description("Optional: Custom directory path to save certificates (e.g. '/etc/nginx/ssl/custom_folder')")),
 )
 
 func handleCertificateIssue(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -49,12 +50,18 @@ func handleCertificateIssue(ctx context.Context, request mcp.CallToolRequest) (*
 		return nil, fmt.Errorf("dns_credential_id is required for dns01 challenge")
 	}
 
+	var certDir string
+	if dir, ok := args["certificate_dir"].(string); ok && dir != "" {
+		certDir = dir
+	}
+
 	// 4. Prepare Internal Payload
 	// We leave KeyType as default (usually EC256 or RSA)
 	payload := &cert.ConfigPayload{
 		ServerName:      domains,
 		ChallengeMethod: method,
 		DNSCredentialID: dnsCredID,
+		CertificateDir: certDir,
 	}
 
 	// 5. Ensure Database Record Exists
@@ -74,12 +81,6 @@ func handleCertificateIssue(ctx context.Context, request mcp.CallToolRequest) (*
 	// 7. Execute Issuance
 	// This blocks until Let's Encrypt verifies the challenge and issues the cert.
 	err = cert.IssueCert(payload, logger)
-	
-	logOutput := logger.ToString()
-
-	if err != nil {
-		return nil, fmt.Errorf("Certificate issuance failed: %v\n\nLogs:\n%s", err, logOutput)
-	}
 
 	// 8. Return Paths
 	// You can now use these paths in your config template.
@@ -88,7 +89,6 @@ func handleCertificateIssue(ctx context.Context, request mcp.CallToolRequest) (*
 		"message":          "Certificate issued successfully",
 		"certificate_path": payload.GetCertificatePath(),
 		"private_key_path": payload.GetCertificateKeyPath(),
-		"logs":             logOutput, // Useful for debugging
 	}
 	jsonResult, _ := json.Marshal(result)
 
