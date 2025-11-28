@@ -6,8 +6,10 @@ import (
 
 func Init() {
 	mcp.AddTool(nginxConfigAddTool, handleNginxConfigAdd)
-	mcp.AddTool(nginxConfigBasePathTool, handleNginxConfigBasePath)
+	mcp.AddTool(nginxConfigDeleteTool, handleNginxConfigDelete)
 	mcp.AddTool(nginxConfigEnableTool, handleNginxConfigEnable)
+	mcp.AddTool(nginxConfigDisableTool, handleNginxConfigDisable)
+	mcp.AddTool(nginxConfigBasePathTool, handleNginxConfigBasePath)
 	mcp.AddTool(nginxConfigGetTool, handleNginxConfigGet)
 	mcp.AddTool(nginxConfigHistoryTool, handleNginxConfigHistory)
 	mcp.AddTool(nginxConfigListTool, handleNginxConfigList)
