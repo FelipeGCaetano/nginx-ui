@@ -119,13 +119,13 @@ func AuthRequired() gin.HandlerFunc {
 		}
 
 		// Check node secret authentication
-		if nodeSecret := getNodeSecret(c); nodeSecret != "" && nodeSecret == settings.NodeSettings.Secret {
-			initUser := user.GetInitUser(c)
-			c.Set("Secret", nodeSecret)
-			c.Set("user", initUser)
-			c.Next()
-			return
-		}
+		// if nodeSecret := getNodeSecret(c); nodeSecret != "" && nodeSecret == settings.NodeSettings.Secret {
+		// 	initUser := user.GetInitUser(c)
+		// 	c.Set("Secret", nodeSecret)
+		// 	c.Set("user", initUser)
+		// 	c.Next()
+		// 	return
+		// }
 
 		token := getToken(c)
 		if token == "" {
